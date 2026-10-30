@@ -3,9 +3,10 @@ English · [中文](README_cn.md)
 # naming-workflow
 
 A workflow for naming a project, for anyone working with coding agents (Claude Code, Codex,
-Antigravity): the agent first works out with you what makes the project different, finds a picture
-for it, collects candidates, checks every one for collisions, and asks you to choose once from a short
-list. A name passes only when nobody **active in the same field** uses it; stars do not count.
+Antigravity): the agent fills a diamond with you (your core value, two kinds of competitors, what only
+you have), looks for the space no competitor's name occupies, joins unrelated words into candidates,
+checks every one for collisions, and asks you to choose once from a short list. A name passes only
+when nobody **active in the same field** uses it; stars do not count.
 
 ## Install
 

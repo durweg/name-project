@@ -1,6 +1,6 @@
 {
   "name": "naming-workflow",
-  "description": "A workflow for naming a project: what makes it different, a picture, candidates, a collision check (activity and field, not stars), one decision",
+  "description": "A workflow for naming a project: the diamond exercise, the white space, forced associations, a collision check (activity and field, not stars), one decision",
   "install": "bash tools/install.sh",
   "remove": "bash tools/install.sh --remove",
   "skills": ["name-project"],

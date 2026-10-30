@@ -1,6 +1,6 @@
 ---
 name: name-project
-description: Find a name for a project (or product, plugin, tool) that says what makes it different and that nobody active in the same field already uses - from its highlight to a metaphor, candidates, a collision check with tools/namecheck.py, a short list, and one decision by the user. Use when the user wants to name or rename a project, or asks whether a name is free.
+description: Find a name for a project (or product, plugin, tool) with the diamond exercise - core value, two kinds of competitors and the difference, as nouns and verbs - then the white space nobody in the market uses, forced associations of unrelated words, a collision check with tools/namecheck.py, a short list, and one decision by the user. Use when the user wants to name or rename a project, or asks whether a name is free.
 ---
 
 # name-project: give a project a name
@@ -8,25 +8,41 @@ description: Find a name for a project (or product, plugin, tool) that says what
 The steps, in order. Each ends with something the user can see; ask the user only where it says so,
 one question at a time.
 
-## 1. What the name has to say
-1. Write in two sentences what the project does for whom, and **what makes it different** from the
-   tools that already exist. List those tools (search the field; ask the user which ones they know).
-2. Say which parts every such tool has: a name built on those does not stand out. Example: for a
-   multi-agent tool, "several agents work together" is common to all of them; "you write your own
-   workflows and share them" was the difference.
-3. Show this to the user and let them correct it before going on. The rest builds on it.
+## 1. The diamond
+Draw a diamond with four corners and fill each with **3 to 5 nouns or verbs, no adjectives**
+("speed", "connect", "flow", not "fast", "connected"):
+- **top**: the project's core value, what it gives its user;
+- **left**: how the main competitors present themselves;
+- **right**: how another kind of competitor presents itself (a different category that solves the
+  same need, for example a manual practice or a general-purpose tool);
+- **bottom**: what only this project has.
 
-## 2. A picture, then words
-1. Look for a picture (metaphor) of the difference that people get at once, from everyday life:
-   a kitchen and its recipes, a guild and its crafts, a herd and its herder. Offer two or three, with
-   what each one says, and let the user pick or bring their own.
-2. From the chosen picture, collect words: things in it, people in it, actions, and short
-   combinations of two words (a role + its tool: "sous" + "book"). Aim for 10 to 20.
-3. Leave out at once: words a known tool in the field already uses for a feature (an agent tool's
-   "recipes"), and words so common they are used for something else everywhere ("cookbook" means a
-   collection of code examples). Say why in one line each.
+Find the competitors first: search the field and ask the user which ones they know. For the left and
+right corners, use the words the competitors use about themselves (their names, first lines,
+taglines), not your summary of them. Write down the competitors' **names** too, and what kind of
+names they are (technical terms, people's roles, made-up words, ...).
 
-## 3. Check every candidate
+Show the diamond to the user and let them correct it before going on. The rest builds on it.
+
+## 2. The white space
+1. Look at which words and kinds of names the competitors already occupy. Name the pattern in one
+   line, for example "they are all technical role names: Copilot, Codex".
+2. Look for combinations of the top and bottom words that **no competitor uses**, above all ones
+   that could stand for a new category instead of a better member of the old one.
+3. Choose one or two directions that leave the competitors' pattern behind: if they are all
+   technical, a direction from nature, motion, craft or the senses. Show them to the user in one
+   line each (what the direction is, why it stands apart) and let the user pick or bring their own.
+
+## 3. Forced association: candidates
+1. Connect words that seem unrelated: one from the top or bottom corner (what the project does or has
+   alone) with one from the chosen direction. Example: Wind + Surf = Windsurf, the picture of moving
+   freely over a sea of code, chosen when the market was full of technical names.
+2. Build candidates from these pairs: whole words joined, parts of words (Vercel = V + "cel" from
+   accelerate), or one word that carries the picture alone. Aim for 10 to 20.
+3. Leave out at once: words in the competitors' pattern from step 2, words a known tool in the field
+   uses for a feature, and words so common they mean something else everywhere. Say why in one line each.
+
+## 4. Check every candidate
 Run `python3 ~/.naming-workflow/tools/namecheck.py <names...> --field <words of the field>`
 (needs `gh` logged in; it pauses between names because GitHub limits searches). Then, for every name
 that is not CLEAN, run it again with `--inspect` and read what it prints. For each name it reports:
@@ -38,22 +54,25 @@ that is not CLEAN, run it again with `--inspect` and read what it prints. For ea
 
 Judge by **activity and field, never by stars**: a new project updated this week in the same field
 takes the name even with 0 stars; an empty template untouched for a year does not. Look at the README,
-the number of commits and the last push before you call a name taken. A project in the same field
-that uses the same picture under another name is worth telling the user about, but does not take the name.
+the number of commits and the last push before you call a name taken.
 
-## 4. A short list, one decision
-1. Show the names that passed in one table: name | what it says (in the user's words, one line) |
-   what the check found. Below it, one line naming the ones left out and why
-   ("active agent tool of the same name", "taken on PyPI and too common to be found").
-2. Recommend one, saying why in a sentence, and say its weak point honestly (for example a word
+## 5. A short list, one decision
+1. Show the names that passed in one table: name | the pair it comes from and what it says (one line)
+   | sound of the first letter | what the check found. Below it, one line naming the ones left out and
+   why ("active agent tool of the same name", "in the competitors' pattern").
+2. The sound column is **a hint, not a filter**: say whether the first letter's feel fits the top
+   corner, and use it only to choose between names that are otherwise even. Feels often named:
+   B steady and trustworthy; V speed and vitality; S smooth and elegant; X precise and technical, but
+   it can feel cold. Do not drop a name for its letter.
+3. Recommend one, saying why in a sentence, and say its weak point honestly (for example a word
    people may not know, which the first line of the README then has to explain).
-3. Ask the user to choose, in one question (the recommended name first). If the user brings a new
+4. Ask the user to choose, in one question (the recommended name first). If the user brings a new
    candidate instead, check it the same way and answer with what you found.
 
-## 5. Record it
+## 6. Record it
 Write down where the project keeps its decisions (its plans or ledger; otherwise tell the user what
-to keep): the chosen name and date, what it says, the check results with the date, the names left out
-and why (so nobody checks them again), and what was learned. Before the name is used publicly,
+to keep): the diamond, the chosen direction, the chosen name and date, the check results with the
+date, and the names left out and why (so nobody checks them again). Before the name is used publicly,
 check it once more: names get taken.
 
 ## After the decision
