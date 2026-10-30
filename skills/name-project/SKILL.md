@@ -39,8 +39,11 @@ Show the diamond to the user and let them correct it before going on. The rest b
    freely over a sea of code, chosen when the market was full of technical names.
 2. Build candidates from these pairs: whole words joined, parts of words (Vercel = V + "cel" from
    accelerate), or one word that carries the picture alone. Aim for 10 to 20.
-3. Leave out at once: words in the competitors' pattern from step 2, words a known tool in the field
-   uses for a feature, and words so common they mean something else everywhere. Say why in one line each.
+3. Do not drop a candidate for the kind of word in it. Instead write one line per candidate on how
+   it stands out and what it could be confused with, judged on the whole combination: does it read like
+   the competitors' names from step 2, does a known tool in the field use one of its words for a
+   feature, is it so common that people will not find it. A common or familiar word in a new
+   combination can still be a new name; whether it is taken is settled by the check in step 4.
 
 ## 4. Check every candidate
 Run `python3 ~/.naming-workflow/tools/namecheck.py <names...> --field <words of the field>`
@@ -58,8 +61,9 @@ the number of commits and the last push before you call a name taken.
 
 ## 5. A short list, one decision
 1. Show the names that passed in one table: name | the pair it comes from and what it says (one line)
-   | sound of the first letter | what the check found. Below it, one line naming the ones left out and
-   why ("active agent tool of the same name", "in the competitors' pattern").
+   | how it stands out and its confusion risk (from step 3) | sound of the first letter | what the
+   check found. Below it, one line naming the ones the check left out and why ("active agent tool of
+   the same name", "taken on PyPI by an active package in the field").
 2. The sound column is **a hint, not a filter**: say whether the first letter's feel fits the top
    corner, and use it only to choose between names that are otherwise even. Feels often named:
    B steady and trustworthy; V speed and vitality; S smooth and elegant; X precise and technical, but
