@@ -73,6 +73,67 @@ class Judging(unittest.TestCase):
         self.assertEqual((r["account"], r["pypi"], r["npm"], r["crates"]), ("free", "free", "free", "free"))
 
 
+class Failures(unittest.TestCase):
+    """A failed or partial look must never read as "free" (NW-R)."""
+
+    def run_check(self, fake, http=lambda url: 404, inspect_=False):
+        real_gh, real_http = nc.gh_json, nc.http_status
+        nc.gh_json, nc.http_status = fake, http
+        try:
+            return nc.check("demo", SINCE, FIELD, do_inspect=inspect_)
+        finally:
+            nc.gh_json, nc.http_status = real_gh, real_http
+
+    def test_a_failed_search_is_an_error_not_a_clean_name(self):
+        def fake(args):
+            raise nc.GhError("HTTP 403: API rate limit exceeded")
+        r = self.run_check(fake)
+        self.assertFalse(r["clean"])
+        self.assertIn("rate limit", r["error"])
+
+    def test_a_failed_account_look_is_unknown_not_free(self):
+        def fake(args):
+            if args[0] == "search":
+                return []
+            raise nc.GhError("gh: not logged in")
+        r = self.run_check(fake)
+        self.assertTrue(r["account"].startswith("unknown"))
+
+    def test_a_full_page_of_results_is_incomplete(self):
+        many = [repo(f"u{i}/demo-{i}", "a recipe app", "2020-01-01") for i in range(nc.LIMIT)]
+        r = self.run_check(lambda args: many if args[0] == "search" else None)
+        self.assertTrue(r["incomplete"])
+        self.assertFalse(r["clean"])
+
+    def test_an_unreadable_readme_keeps_the_name_unclear(self):
+        def fake(args):
+            if args[0] == "search":
+                return [repo("x/demo", None, "2026-10-30")]
+            if args[1] == "users/demo":
+                return None
+            raise nc.GhError("HTTP 502")
+        r = self.run_check(fake, inspect_=True)
+        self.assertFalse(r["clean"])
+        self.assertEqual([u["fullName"] for u in r["unclear"]], ["x/demo"])
+
+    def test_the_whole_readme_is_judged_not_only_its_start(self):
+        import base64
+        text = "# demo\n" + "word " * 80 + "\nAn orchestrator for AI agents."
+        def fake(args):
+            if args[0] == "search":
+                return [repo("x/demo", None, "2026-10-30")]
+            if args[1] == "users/demo":
+                return None
+            if args[1].endswith("/readme"):
+                return {"content": base64.b64encode(text.encode()).decode()}
+            if args[1].endswith("/commits?per_page=100"):
+                return [{}] * 3
+            return {"language": "Go", "created_at": "2026-01-01T00:00:00Z"}
+        r = self.run_check(fake, inspect_=True)
+        self.assertEqual([c["fullName"] for c in r["close"]], ["x/demo"])
+        self.assertNotIn("readme_text", r["close"][0])
+
+
 class Install(unittest.TestCase):
     def test_links_the_skill_for_installed_agents_and_removes_only_its_own(self):
         home = Path(tempfile.mkdtemp())
@@ -94,6 +155,31 @@ class Install(unittest.TestCase):
         self.assertFalse((home / ".claude/skills/name-project").exists())
         self.assertFalse((home / ".naming-workflow").exists())
         self.assertTrue((home / ".claude/skills/mine").exists())
+
+    def test_a_link_of_the_same_name_to_something_else_is_left_alone(self):
+        home = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, home)
+        other = home / "other-plugin/skills/name-project"
+        other.mkdir(parents=True)
+        (home / ".claude/skills").mkdir(parents=True)
+        (home / ".claude/skills/name-project").symlink_to(other)
+        env = dict(os.environ, HOME=str(home))
+        env.pop("CODEX_HOME", None)
+        out = subprocess.run(["bash", str(ROOT / "tools/install.sh")], env=env, capture_output=True, text=True)
+        self.assertIn("not to naming-workflow; left unchanged", out.stdout)
+        self.assertEqual(os.readlink(home / ".claude/skills/name-project"), str(other))
+
+    def test_a_link_to_an_earlier_clone_is_moved_to_this_one(self):
+        home = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, home)
+        old = home / "old-clone"
+        shutil.copytree(ROOT, old, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+        (home / ".claude/skills").mkdir(parents=True)
+        (home / ".claude/skills/name-project").symlink_to(old / "skills/name-project")
+        env = dict(os.environ, HOME=str(home))
+        env.pop("CODEX_HOME", None)
+        subprocess.run(["bash", str(ROOT / "tools/install.sh")], env=env, check=True, capture_output=True)
+        self.assertEqual((home / ".claude/skills/name-project").resolve(), (ROOT / "skills/name-project").resolve())
 
 
 if __name__ == "__main__":

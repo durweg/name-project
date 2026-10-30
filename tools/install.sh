@@ -13,6 +13,12 @@ remove=''
 [ "${1:-}" = "--remove" ] && remove=1
 [ -z "${1:-}" ] || [ -n "$remove" ] || { echo "usage: bash tools/install.sh [--remove]"; exit 2; }
 
+ours() {   # ours <link target>: an earlier clone of naming-workflow (moved), or its skill folder
+    local target="${1%/}" root
+    case "$target" in */skills/name-project) root="${target%/skills/name-project}" ;; *) root="$target" ;; esac
+    grep -qs '"name": "naming-workflow"' "$root/aiagent-plugin.json"
+}
+
 link() {   # link <target> <link path>
     local src="$1" dst="$2"
     if [ -n "$remove" ]; then
@@ -21,7 +27,8 @@ link() {   # link <target> <link path>
     fi
     mkdir -p "$(dirname "$dst")"
     if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then echo "[OK] $dst (already linked)"
-    elif [ -L "$dst" ]; then ln -sfn "$src" "$dst"; echo "[OK] $dst -> $src (re-pointed)"
+    elif [ -L "$dst" ] && ours "$(readlink "$dst")"; then ln -sfn "$src" "$dst"; echo "[OK] $dst -> $src (re-pointed from an earlier clone)"
+    elif [ -L "$dst" ]; then echo "[!]  $dst points to $(readlink "$dst"), not to naming-workflow; left unchanged"
     elif [ -e "$dst" ]; then echo "[!]  $dst exists and is not a link; left unchanged"
     else ln -s "$src" "$dst"; echo "[OK] $dst -> $src"; fi
 }

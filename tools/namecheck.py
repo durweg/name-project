@@ -25,6 +25,7 @@ import urllib.error
 import urllib.request
 
 DEFAULT_FIELD = "agent,ai,llm,workflow,claude,codex,gpt,copilot,prompt,multi-agent,mcp,skill"
+LIMIT = 100              # repositories read per name; more than that is reported as incomplete
 REGISTRIES = {"pypi": "https://pypi.org/pypi/{}/json", "npm": "https://registry.npmjs.org/{}",
               "crates": "https://crates.io/api/v1/crates/{}"}
 
@@ -50,14 +51,25 @@ def classify(name, repos, since, field):
             "close": close, "unclear": unclear, "clean": not close and not unclear}
 
 
+class GhError(Exception):
+    """A gh call that failed for another reason than "not found"."""
+
+
 def gh_json(args):
-    r = subprocess.run(["gh", *args], capture_output=True, text=True)
+    """The JSON gh prints; None when GitHub says the thing does not exist (404); GhError for any
+    other failure (not logged in, rate limit, network), which must never read as "nothing found"."""
+    try:
+        r = subprocess.run(["gh", *args], capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.SubprocessError) as e:
+        raise GhError(str(e))
     if r.returncode != 0:
-        return None
+        if "HTTP 404" in r.stderr or "Not Found" in r.stderr:
+            return None
+        raise GhError((r.stderr or r.stdout).strip()[:200] or f"gh exited {r.returncode}")
     try:
         return json.loads(r.stdout or "null")
     except ValueError:
-        return None
+        raise GhError("gh printed something that is not JSON")
 
 
 def http_status(url):
@@ -71,34 +83,49 @@ def http_status(url):
 
 
 def inspect(full_name):
-    info = gh_json(["api", f"repos/{full_name}"]) or {}
-    commits = gh_json(["api", f"repos/{full_name}/commits?per_page=100"]) or []
-    readme = gh_json(["api", f"repos/{full_name}/readme"]) or {}
+    """What a repository is: commits, language, created, and its README (whole text for judging,
+    the start for showing). "read": False when any of it could not be read."""
     try:
-        text = base64.b64decode(readme.get("content", "")).decode("utf-8", "replace")
-    except ValueError:
-        text = ""
-    head = " ".join(" ".join(text.split()).split(" ")[:40])
-    return {"commits": f"{len(commits)}{'+' if len(commits) == 100 else ''}", "language": info.get("language"),
-            "created": (info.get("created_at") or "")[:10], "readme": head}
+        info = gh_json(["api", f"repos/{full_name}"]) or {}
+        commits = gh_json(["api", f"repos/{full_name}/commits?per_page=100"]) or []
+        readme = gh_json(["api", f"repos/{full_name}/readme"])     # None: the repository has no README
+        text = base64.b64decode((readme or {}).get("content", "")).decode("utf-8", "replace")
+    except (GhError, ValueError) as e:
+        return {"read": False, "error": str(e)[:120]}
+    return {"read": True, "commits": f"{len(commits)}{'+' if len(commits) == 100 else ''}",
+            "language": info.get("language"), "created": (info.get("created_at") or "")[:10],
+            "readme_text": text, "readme": " ".join(" ".join(text.split()).split(" ")[:40])}
 
 
 def check(name, since, field, do_inspect):
-    repos = gh_json(["search", "repos", f"{name} in:name", "--limit", "30", "--json",
-                     "fullName,description,pushedAt,stargazersCount"]) or []
+    try:
+        repos = gh_json(["search", "repos", f"{name} in:name", "--limit", str(LIMIT), "--json",
+                         "fullName,description,pushedAt,stargazersCount"]) or []
+    except GhError as e:
+        return {"name": name, "error": f"GitHub search failed: {e}", "clean": False, "close": [], "unclear": []}
     result = classify(name, repos, since, field)
-    user = gh_json(["api", f"users/{name}"])
-    result["account"] = f"{user.get('type')} with {user.get('public_repos')} repositories" if user else "free"
+    # GitHub returns at most LIMIT here: with that many, more exist that were not checked.
+    result["incomplete"] = len(repos) >= LIMIT
+    if result["incomplete"]:
+        result["clean"] = False
+    try:
+        user = gh_json(["api", f"users/{name}"])
+        result["account"] = f"{user.get('type')} with {user.get('public_repos')} repositories" if user else "free"
+    except GhError as e:
+        result["account"] = f"unknown ({e})"[:80]
     for key, url in REGISTRIES.items():
         status = http_status(url.format(name))
         result[key] = "free" if status == 404 else "taken" if status == 200 else f"unknown ({status})"
     if do_inspect:
         for r in result["close"] + result["unclear"]:
             r.update(inspect(r["fullName"]))
-        # An unclear repository whose README is in the field is close; one whose README is not, is not.
-        result["close"] += [r for r in result["unclear"] if in_field(r["readme"], field)]
-        result["unclear"] = []
-        result["clean"] = not result["close"]
+        # An unclear repository is close when its whole README is in the field, and out of the way
+        # when its README was read and is not; if it could not be read, it stays unclear.
+        result["close"] += [r for r in result["unclear"] if r["read"] and in_field(r["readme_text"], field)]
+        result["unclear"] = [r for r in result["unclear"] if not r["read"]]
+        result["clean"] = not result["close"] and not result["unclear"] and not result["incomplete"]
+    for r in result["close"] + result["unclear"]:
+        r.pop("readme_text", None)
     return result
 
 
@@ -119,12 +146,18 @@ def main(argv):
         print(json.dumps(results, indent=1, ensure_ascii=False))
         return 0
     for r in results:
-        verdict = "TAKEN" if r["close"] else "CHECK" if r["unclear"] else "CLEAN"
+        if "error" in r:
+            print(f"{r['name']:14} ERROR  {r['error']}  (not checked: do not take it as free)")
+            continue
+        verdict = "TAKEN" if r["close"] else "CHECK" if r["unclear"] or r["incomplete"] else "CLEAN"
         print(f"{r['name']:14} {verdict}  repos {r['repos']} (same name {r['exact']}, "
               f"updated since {a.since}: {r['recent']})  account {r['account']}  "
               f"pypi {r['pypi']}  npm {r['npm']}  crates {r['crates']}")
+        if r["incomplete"]:
+            print(f"    ? more than {LIMIT} repositories have this name; only the first {LIMIT} were checked")
         for c in r["unclear"]:
-            print(f"    ? {c['fullName']} {c['stargazersCount']}* pushed {c['pushedAt'][:10]}: no description; run with --inspect")
+            why = f"its README could not be read ({c['error']})" if c.get("read") is False else "no description; run with --inspect"
+            print(f"    ? {c['fullName']} {c['stargazersCount']}* pushed {c['pushedAt'][:10]}: {why}")
         for c in r["close"]:
             print(f"    ! {c['fullName']} {c['stargazersCount']}* pushed {c['pushedAt'][:10]}: {(c['description'] or '')[:90]}")
             if "readme" in c:
