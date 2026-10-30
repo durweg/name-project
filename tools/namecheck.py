@@ -92,6 +92,8 @@ def inspect(full_name):
         text = base64.b64decode((readme or {}).get("content", "")).decode("utf-8", "replace")
     except (GhError, ValueError) as e:
         return {"read": False, "error": str(e)[:120]}
+    if not text.strip():   # no README, or an empty one: nothing to judge by, so it is not cleared
+        return {"read": False, "error": "it has no README to judge by" if readme is None else "its README is empty"}
     return {"read": True, "commits": f"{len(commits)}{'+' if len(commits) == 100 else ''}",
             "language": info.get("language"), "created": (info.get("created_at") or "")[:10],
             "readme_text": text, "readme": " ".join(" ".join(text.split()).split(" ")[:40])}
@@ -156,7 +158,8 @@ def main(argv):
         if r["incomplete"]:
             print(f"    ? more than {LIMIT} repositories have this name; only the first {LIMIT} were checked")
         for c in r["unclear"]:
-            why = f"its README could not be read ({c['error']})" if c.get("read") is False else "no description; run with --inspect"
+            why = (f"no evidence either way: {c['error']}; look at the repository yourself" if c.get("read") is False
+                   else "no description; run with --inspect")
             print(f"    ? {c['fullName']} {c['stargazersCount']}* pushed {c['pushedAt'][:10]}: {why}")
         for c in r["close"]:
             print(f"    ! {c['fullName']} {c['stargazersCount']}* pushed {c['pushedAt'][:10]}: {(c['description'] or '')[:90]}")

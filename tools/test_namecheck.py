@@ -116,6 +116,29 @@ class Failures(unittest.TestCase):
         self.assertFalse(r["clean"])
         self.assertEqual([u["fullName"] for u in r["unclear"]], ["x/demo"])
 
+    def readme_case(self, readme):
+        def fake(args):
+            if args[0] == "search":
+                return [repo("x/demo", None, "2026-10-30")]
+            if args[1] == "users/demo":
+                return None
+            if args[1].endswith("/readme"):
+                return readme
+            if args[1].endswith("/commits?per_page=100"):
+                return [{}] * 3
+            return {"language": "Go", "created_at": "2026-01-01T00:00:00Z"}
+        return self.run_check(fake, inspect_=True)
+
+    def test_no_readme_is_no_evidence(self):
+        r = self.readme_case(None)                                  # GitHub: 404, no README
+        self.assertFalse(r["clean"])
+        self.assertEqual(r["unclear"][0]["error"], "it has no README to judge by")
+
+    def test_an_empty_readme_is_no_evidence(self):
+        r = self.readme_case({"content": ""})
+        self.assertFalse(r["clean"])
+        self.assertEqual(r["unclear"][0]["error"], "its README is empty")
+
     def test_the_whole_readme_is_judged_not_only_its_start(self):
         import base64
         text = "# demo\n" + "word " * 80 + "\nAn orchestrator for AI agents."
