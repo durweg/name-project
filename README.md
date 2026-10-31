@@ -10,7 +10,7 @@ when nobody **active in the same field** uses it; stars do not count.
 
 ## Install
 
-As an [AIagents](https://github.com/musetee/aiagents) plugin (this repository is private for now):
+As an [AIagents](https://github.com/musetee/aiagents) plugin:
 
 ```bash
 aiagent plugin install git@github.com:musetee/name-project.git
@@ -49,3 +49,7 @@ repository updated in the last year has no description (`?`); run again with `--
 its README. Always read the `!` lines before calling a name taken.
 
 Tests: `python3 -m unittest discover -s tools -p 'test_*.py'` (no network).
+
+---
+
+License: [MIT](LICENSE).

@@ -6,7 +6,7 @@
 
 ## 安装
 
-作为 [AIagents](https://github.com/musetee/aiagents) 插件（这个仓库目前是私有的）：
+作为 [AIagents](https://github.com/musetee/aiagents) 插件：
 
 ```bash
 aiagent plugin install git@github.com:musetee/name-project.git
@@ -27,3 +27,7 @@ python3 ~/.name-project/tools/namecheck.py sousbook coherd --inspect
 `CLEAN`：最近一年更新过的同名仓库里，没有一个的简介用到你这个领域的词（`--field`，默认 agent、ai、llm、workflow 等）。`TAKEN`：有（标 `!`）。`CHECK`：有最近一年更新过、却没写简介的同名仓库（标 `?`），加 `--inspect` 再跑一次，它会读那个仓库的 README。判断名字被占之前，一定要看 `!` 那几行。
 
 测试：`python3 -m unittest discover -s tools -p 'test_*.py'`（不联网）。
+
+---
+
+MIT 许可证：[LICENSE](LICENSE)。
