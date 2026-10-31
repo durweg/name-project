@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased: a Durweg workflow first
+
+README (both languages): installed with `durweg library add https://github.com/musetee/name-project.git`
+and run with "Run name-project with durweg"; no AIagents. The skill runs the namecheck copy in the
+run (`<run>/.wf/workflow/tools/namecheck.py`), so it works wherever the workflow is installed (before,
+it needed `~/.name-project`). `tools/install.sh` and `aiagent-plugin.json` stay for installing the
+skill alone.
+
 ## Unreleased: renamed to name-project
 
 The repository, plugin and folder link take the workflow's name: `naming-workflow` ->
