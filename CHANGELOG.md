@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased: runs with wf
+
+`workflow.json` describes the six steps for the workflow platform's `wf`: each step writes fixed
+files under `steps/` and passes gates before the next one starts (`tools/verify_steps.py`,
+`verify_check.py`, `verify_record.py`; a name counts as checked only when a namecheck record shows a
+complete result, inspected when it is not clean). `namecheck.py --record FILE` saves the results
+with the names, `--field`, `--since`, start time and the script's sha256. The method of the skill is
+unchanged; each step now ends with the files it writes.
+
 ## 2026-10-31: web and trademark search before the short list
 
 Step 4 now also asks for a web search and a trademark search of each name before it goes on the

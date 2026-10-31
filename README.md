@@ -25,6 +25,11 @@ linked into each installed agent, and `~/.naming-workflow` points to the clone. 
 Tell an agent "help me find a name for this project" (or "is the name X free?"). It follows
 [`skills/name-project/SKILL.md`](skills/name-project/SKILL.md) and asks you only where a decision is yours.
 
+To run it step by step with checks and a record (the workflow platform's `wf`, still local):
+"Name this project with wf, runs in `runs/`." The agent starts with
+`wf start ~/.naming-workflow <slug> --runs runs` and stops at each step whose gates are not met;
+the files each step writes are listed in the skill. Definition: [`workflow.json`](workflow.json).
+
 The check also runs on its own:
 
 ```bash

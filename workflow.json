@@ -1,0 +1,109 @@
+{
+  "id": "naming",
+  "title": "Name a project: diamond, white space, candidates, check, decision, record",
+  "skill": "skills/name-project",
+  "snapshot": ["tools/namecheck.py", "tools/verify_steps.py", "tools/verify_check.py", "tools/verify_record.py"],
+  "steps": [
+    {
+      "id": "diamond",
+      "title": "The diamond",
+      "instructions": "skills/name-project/SKILL.md#1-the-diamond",
+      "artifacts": ["steps/1-diamond.json"],
+      "gates": [
+        {"type": "json", "file": "steps/1-diamond.json", "schema": {
+          "type": "object", "required": ["top", "left", "right", "bottom", "competitors"],
+          "properties": {
+            "top": {"type": "array", "minItems": 3, "maxItems": 5, "uniqueItems": true, "items": {"type": "string"}},
+            "left": {"type": "array", "minItems": 3, "maxItems": 5, "uniqueItems": true, "items": {"type": "string"}},
+            "right": {"type": "array", "minItems": 3, "maxItems": 5, "uniqueItems": true, "items": {"type": "string"}},
+            "bottom": {"type": "array", "minItems": 3, "maxItems": 5, "uniqueItems": true, "items": {"type": "string"}},
+            "competitors": {"type": "array", "minItems": 1, "items": {
+              "type": "object", "required": ["name", "says", "name_kind"],
+              "properties": {"name": {"type": "string"}, "says": {"type": "string"}, "name_kind": {"type": "string"}}}}}}},
+        {"type": "user"}
+      ]
+    },
+    {
+      "id": "white-space",
+      "title": "The white space",
+      "instructions": "skills/name-project/SKILL.md#2-the-white-space",
+      "artifacts": ["steps/2-white-space.json"],
+      "gates": [
+        {"type": "json", "file": "steps/2-white-space.json", "schema": {
+          "type": "object", "required": ["pattern", "directions"],
+          "properties": {
+            "pattern": {"type": "string"},
+            "directions": {"type": "array", "minItems": 1, "maxItems": 2, "items": {
+              "type": "object", "required": ["what", "why"],
+              "properties": {"what": {"type": "string"}, "why": {"type": "string"}}}}}}},
+        {"type": "user"},
+        {"type": "command", "argv": ["python3", "{wf}/tools/verify_steps.py", "white-space", "{run}"]}
+      ]
+    },
+    {
+      "id": "candidates",
+      "title": "Forced association: candidates",
+      "instructions": "skills/name-project/SKILL.md#3-forced-association-candidates",
+      "artifacts": ["steps/3-candidates.json"],
+      "gates": [
+        {"type": "json", "file": "steps/3-candidates.json", "schema": {
+          "type": "object", "required": ["candidates"],
+          "properties": {"candidates": {"type": "array", "minItems": 10, "maxItems": 20, "items": {
+            "type": "object", "required": ["name", "pair", "standout", "confusion"],
+            "properties": {"name": {"type": "string"},
+                           "pair": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}},
+                           "standout": {"type": "string"}, "confusion": {"type": "string"}}}}}}},
+        {"type": "command", "argv": ["python3", "{wf}/tools/verify_steps.py", "candidates", "{run}"]}
+      ]
+    },
+    {
+      "id": "check",
+      "title": "Check every candidate",
+      "instructions": "skills/name-project/SKILL.md#4-check-every-candidate",
+      "artifacts": ["steps/4-check.json", "checks/*"],
+      "gates": [
+        {"type": "files", "glob": "checks/*.record.json", "min_count": 1},
+        {"type": "json", "file": "steps/4-check.json", "schema": {
+          "type": "object", "required": ["field", "since", "candidates", "proposed"],
+          "properties": {
+            "field": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+            "since": {"type": "string"},
+            "candidates": {"type": "object"},
+            "proposed": {"type": "array", "minItems": 1, "items": {
+              "type": "object", "required": ["name", "web_plain", "web_field", "trademark"]}}}}},
+        {"type": "command", "argv": ["python3", "{wf}/tools/verify_check.py", "{run}"], "timeout": 30}
+      ]
+    },
+    {
+      "id": "decision",
+      "title": "A short list, one decision",
+      "instructions": "skills/name-project/SKILL.md#5-a-short-list-one-decision",
+      "artifacts": ["steps/5-decision.json"],
+      "gates": [
+        {"type": "json", "file": "steps/5-decision.json", "schema": {
+          "type": "object", "required": ["shortlist", "recommendation"],
+          "properties": {
+            "shortlist": {"type": "array", "minItems": 1, "items": {
+              "type": "object", "required": ["name", "says", "standout_confusion", "first_letter", "check"]}},
+            "recommendation": {"type": "object", "required": ["name", "why", "weak_point"]}}}},
+        {"type": "user"},
+        {"type": "command", "argv": ["python3", "{wf}/tools/verify_steps.py", "decision", "{run}"]}
+      ]
+    },
+    {
+      "id": "record",
+      "title": "Record it",
+      "instructions": "skills/name-project/SKILL.md#6-record-it",
+      "artifacts": ["steps/6-record.json"],
+      "gates": [
+        {"type": "json", "file": "steps/6-record.json", "schema": {
+          "type": "object", "required": ["chosen", "decision_date", "check_date", "trial", "left_out"],
+          "properties": {
+            "chosen": {"type": "string"}, "decision_date": {"type": "string"}, "check_date": {"type": "string"},
+            "trial": {"type": "boolean"},
+            "left_out": {"type": "array", "items": {"type": "object", "required": ["name", "reason"]}}}}},
+        {"type": "command", "argv": ["python3", "{wf}/tools/verify_record.py", "{run}"]}
+      ]
+    }
+  ]
+}

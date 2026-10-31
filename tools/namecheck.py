@@ -2,7 +2,7 @@
 """Check candidate project names for collisions: who already uses each name, and whether they are
 active in the same field.
 
-  namecheck.py NAME [NAME ...] [--since YYYY-MM-DD] [--field WORDS] [--inspect] [--json]
+  namecheck.py NAME [NAME ...] [--since YYYY-MM-DD] [--field WORDS] [--inspect] [--json] [--record FILE]
 
 For each name: GitHub repositories with the name in their name (how many, how many updated since
 --since, and which of those describe themselves with a word from --field), whether a GitHub
@@ -12,9 +12,14 @@ close, which is what decides whether a name is really taken. Needs `gh` logged i
 
 A name is "clean" when no repository updated since --since describes itself with a field word.
 Stars do not count: a new, active project in the same field takes a name, an old, empty one does not.
+
+--record FILE also writes the results as JSON together with how they were made (names, --field,
+--since, --inspect, start time, and the sha256 of this script), so a check can be verified later
+(workflow step 4 accepts only such records).
 """
 import argparse
 import base64
+import hashlib
 import datetime
 import json
 import re
@@ -138,12 +143,23 @@ def main(argv):
     p.add_argument("--field", default=DEFAULT_FIELD, help="comma-separated words of the project's field")
     p.add_argument("--inspect", action="store_true")
     p.add_argument("--json", action="store_true")
+    p.add_argument("--record", metavar="FILE", help="also write the results and how they were made to FILE")
     a = p.parse_args(argv)
+    started = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
     results = []
     for i, name in enumerate(a.names):
         if i:
             time.sleep(2.5)                 # GitHub's search allows about 30 requests a minute
         results.append(check(name, a.since, a.field.split(","), a.inspect))
+    if a.record:
+        with open(__file__, "rb") as f:
+            me = hashlib.sha256(f.read()).hexdigest()
+        record = {"tool": "namecheck", "sha256": me, "started_at": started, "names": a.names,
+                  "field": [w.strip() for w in a.field.split(",") if w.strip()], "since": a.since,
+                  "inspect": a.inspect, "results": results}
+        with open(a.record, "w", encoding="utf-8") as f:
+            json.dump(record, f, indent=1, ensure_ascii=False)
+            f.write("\n")
     if a.json:
         print(json.dumps(results, indent=1, ensure_ascii=False))
         return 0
