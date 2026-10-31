@@ -199,6 +199,21 @@ class Install(unittest.TestCase):
         subprocess.run(["bash", str(ROOT / "tools/install.sh")], env=env, check=True, capture_output=True)
         self.assertTrue((home / ".naming-workflow").is_symlink())
 
+    def test_dangling_links_after_moving_the_clone_are_re_pointed(self):
+        """The clone was moved: the skill links and ~/.naming-workflow point nowhere; install fixes them."""
+        home = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, home)
+        gone = home / "moved-away"
+        (home / ".claude/skills").mkdir(parents=True)
+        (home / ".claude/skills/name-project").symlink_to(gone / "skills/name-project")
+        (home / ".naming-workflow").symlink_to(gone)
+        env = dict(os.environ, HOME=str(home))
+        env.pop("CODEX_HOME", None)
+        out = subprocess.run(["bash", str(ROOT / "tools/install.sh")], env=env, capture_output=True, text=True)
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+        self.assertEqual((home / ".claude/skills/name-project").resolve(), (ROOT / "skills/name-project").resolve())
+        self.assertFalse((home / ".naming-workflow").is_symlink())
+
     def test_a_link_of_the_same_name_to_something_else_is_left_alone(self):
         home = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, home)

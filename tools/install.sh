@@ -15,6 +15,7 @@ remove=''
 
 ours() {   # ours <link target>: an earlier clone (moved; also under the old name naming-workflow), or its skill folder
     local target="${1%/}" root
+    [ -e "$target" ] || return 0      # dangling (the clone was moved or deleted): nothing to lose
     case "$target" in */skills/name-project) root="${target%/skills/name-project}" ;; *) root="$target" ;; esac
     grep -Eqs '"name": "(name-project|naming-workflow)"' "$root/aiagent-plugin.json"
 }
