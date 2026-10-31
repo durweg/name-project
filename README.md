@@ -1,6 +1,6 @@
 English · [中文](README_cn.md)
 
-# naming-workflow
+# name-project
 
 A workflow for naming a project, for anyone working with coding agents (Claude Code, Codex,
 Antigravity): the agent fills a diamond with you (your core value, two kinds of competitors, what only
@@ -13,11 +13,11 @@ when nobody **active in the same field** uses it; stars do not count.
 As an [AIagents](https://github.com/musetee/aiagents) plugin (this repository is private for now):
 
 ```bash
-aiagent plugin install git@github.com:musetee/naming-workflow.git
+aiagent plugin install git@github.com:musetee/name-project.git
 ```
 
 Without AIagents: clone it anywhere and run `bash tools/install.sh`. The skill `name-project` is then
-linked into each installed agent, and `~/.naming-workflow` points to the clone. `gh` must be logged in
+linked into each installed agent, and `~/.name-project` points to the clone. `gh` must be logged in
 (`gh auth login`) for the check.
 
 ## Use it
@@ -27,13 +27,13 @@ Tell an agent "help me find a name for this project" (or "is the name X free?").
 
 To run it step by step with checks and a record ([Durweg](https://github.com/musetee/durweg)):
 "Name this project with durweg, runs in `runs/`." The agent starts with
-`durweg start ~/.naming-workflow <slug> --runs runs` and stops at each step whose gates are not met;
+`durweg start ~/.name-project <slug> --runs runs` and stops at each step whose gates are not met;
 the files each step writes are listed in the skill. Definition: [`workflow.json`](workflow.json).
 
 The check also runs on its own:
 
 ```bash
-python3 ~/.naming-workflow/tools/namecheck.py sousbook coherd --inspect
+python3 ~/.name-project/tools/namecheck.py sousbook coherd --inspect
 ```
 
 ```text

@@ -172,12 +172,32 @@ class Install(unittest.TestCase):
         self.assertEqual((home / ".claude/skills/name-project").resolve(), target)
         self.assertEqual((home / ".codex/skills/name-project").resolve(), target)
         self.assertFalse((home / ".gemini").exists())            # Antigravity not installed: not touched
-        self.assertTrue((home / ".naming-workflow/skills/name-project/SKILL.md").exists())
+        self.assertTrue((home / ".name-project/skills/name-project/SKILL.md").exists())
         (home / ".claude/skills/mine").mkdir()
         subprocess.run(["bash", str(ROOT / "tools/install.sh"), "--remove"], env=env, check=True, capture_output=True)
         self.assertFalse((home / ".claude/skills/name-project").exists())
-        self.assertFalse((home / ".naming-workflow").exists())
+        self.assertFalse((home / ".name-project").exists())
         self.assertTrue((home / ".claude/skills/mine").exists())
+
+    def test_the_old_name_link_is_retired(self):
+        """~/.naming-workflow (the name until 2026-10-31) pointing at a clone goes; one to anything else stays."""
+        home = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, home)
+        old = home / "old-clone"
+        shutil.copytree(ROOT, old, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+        p = old / "aiagent-plugin.json"
+        p.write_text(p.read_text().replace('"name": "name-project"', '"name": "naming-workflow"'))
+        (home / ".naming-workflow").symlink_to(old)
+        env = dict(os.environ, HOME=str(home))
+        env.pop("CODEX_HOME", None)
+        out = subprocess.run(["bash", str(ROOT / "tools/install.sh")], env=env, capture_output=True, text=True)
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+        self.assertFalse((home / ".naming-workflow").is_symlink())
+        self.assertEqual((home / ".name-project").resolve(), ROOT.resolve())
+        (home / "elsewhere").mkdir()
+        (home / ".naming-workflow").symlink_to(home / "elsewhere")
+        subprocess.run(["bash", str(ROOT / "tools/install.sh")], env=env, check=True, capture_output=True)
+        self.assertTrue((home / ".naming-workflow").is_symlink())
 
     def test_a_link_of_the_same_name_to_something_else_is_left_alone(self):
         home = Path(tempfile.mkdtemp())
@@ -189,7 +209,7 @@ class Install(unittest.TestCase):
         env = dict(os.environ, HOME=str(home))
         env.pop("CODEX_HOME", None)
         out = subprocess.run(["bash", str(ROOT / "tools/install.sh")], env=env, capture_output=True, text=True)
-        self.assertIn("not to naming-workflow; left unchanged", out.stdout)
+        self.assertIn("not to name-project; left unchanged", out.stdout)
         self.assertEqual(os.readlink(home / ".claude/skills/name-project"), str(other))
 
     def test_a_link_to_an_earlier_clone_is_moved_to_this_one(self):

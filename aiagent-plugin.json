@@ -1,10 +1,10 @@
 {
-  "name": "naming-workflow",
+  "name": "name-project",
   "description": "A workflow for naming a project: the diamond exercise, the white space, forced associations, a collision check (activity and field, not stars), one decision",
   "install": "bash tools/install.sh",
   "remove": "bash tools/install.sh --remove",
   "skills": ["name-project"],
-  "project_marker": "~/.naming-workflow",
+  "project_marker": "~/.name-project",
   "tools": {"namecheck": "tools/namecheck.py"},
   "hooks": []
 }

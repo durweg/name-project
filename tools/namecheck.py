@@ -80,7 +80,7 @@ def gh_json(args):
 
 def http_status(url):
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "naming-workflow namecheck"})
+        req = urllib.request.Request(url, headers={"User-Agent": "name-project namecheck"})
         return urllib.request.urlopen(req, timeout=10).status
     except urllib.error.HTTPError as e:
         return e.code

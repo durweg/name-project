@@ -9,7 +9,7 @@ The steps, in order. Each ends with something the user can see; ask the user onl
 one question at a time.
 
 
-**Run it with durweg** (skill run-workflow): `durweg start ~/.naming-workflow <slug> --runs <project>/runs`,
+**Run it with durweg** (skill run-workflow): `durweg start ~/.name-project <slug> --runs <project>/runs`,
 then for each step `durweg begin`, write the step's files (named at the end of each step below, paths
 relative to the run folder), and `durweg done`. Where the user decides, `durweg propose` before showing it
 and `durweg confirm --quote "<their words>" --set chosen=<…>` after they answer. Without durweg, follow the
@@ -64,7 +64,7 @@ words>` when the user brings their own.
 word from the direction], "standout", "confusion"}]}`, 10 to 20, names unique.
 
 ## 4. Check every candidate
-Run `python3 ~/.naming-workflow/tools/namecheck.py <names...> --field <words of the field>`
+Run `python3 ~/.name-project/tools/namecheck.py <names...> --field <words of the field>`
 (needs `gh` logged in; it pauses between names because GitHub limits searches). Then, for every name
 that is not CLEAN, run it again with `--inspect` and read what it prints. For each name it reports:
 - GitHub repositories with the name, how many were updated in the last year, and those whose

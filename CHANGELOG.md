@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased: renamed to name-project
+
+The repository, plugin and folder link take the workflow's name: `naming-workflow` ->
+`name-project` (GitHub `musetee/name-project`), `~/.naming-workflow` -> `~/.name-project`.
+`tools/install.sh` re-points links of a clone under either name and removes an old
+`~/.naming-workflow` link that points at one; a link of that name to anything else stays.
+
 ## Unreleased: the command is `durweg`
 
 The workflow platform's command `wf` was renamed `durweg` with no alias, so the skill's
