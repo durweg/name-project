@@ -59,6 +59,11 @@ Judge by **activity and field, never by stars**: a new project updated this week
 takes the name even with 0 stars; an empty template untouched for a year does not. Look at the README,
 the number of commits and the last push before you call a name taken.
 
+namecheck.py does not see products outside these sites. Before a name goes on the short list, search
+the web for it, with and without words of the field, and for a registered trademark of that name: a
+name free on GitHub can still be a sold product or brand for the same users (Methodkit was CLEAN on
+GitHub and is the MethodKit® trademark).
+
 ## 5. A short list, one decision
 1. Show the names that passed in one table: name | the pair it comes from and what it says (one line)
    | how it stands out and its confusion risk (from step 3) | sound of the first letter | what the

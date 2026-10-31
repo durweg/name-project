@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-31: web and trademark search before the short list
+
+Step 4 now also asks for a web search and a trademark search of each name before it goes on the
+short list: namecheck.py sees only GitHub and the package sites (Methodkit was CLEAN there and is a
+registered trademark).
+
 ## 2026-10-31: method rewritten
 
 The way to find candidates is replaced by the user's chosen rules (`namingrules.txt`, not in the
