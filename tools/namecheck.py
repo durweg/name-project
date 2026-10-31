@@ -22,6 +22,7 @@ import base64
 import hashlib
 import datetime
 import json
+import os
 import re
 import subprocess
 import sys
@@ -157,6 +158,7 @@ def main(argv):
         record = {"tool": "namecheck", "sha256": me, "started_at": started, "names": a.names,
                   "field": [w.strip() for w in a.field.split(",") if w.strip()], "since": a.since,
                   "inspect": a.inspect, "results": results}
+        os.makedirs(os.path.dirname(os.path.abspath(a.record)), exist_ok=True)
         with open(a.record, "w", encoding="utf-8") as f:
             json.dump(record, f, indent=1, ensure_ascii=False)
             f.write("\n")

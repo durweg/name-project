@@ -110,8 +110,8 @@ its latest check to be an `--inspect` run; candidate names must all differ (case
 **Files:** `steps/5-decision.json`: `{"shortlist": [{"name", "says", "standout_confusion",
 "first_letter", "check"}], "recommendation": {"name", "why", "weak_point"}}`; every name on the short
 list from `proposed` of step 4. Propose, ask, and confirm with `--set chosen=<name>`. A name the user
-brings that is not on the list: `wf reopen <run> candidates --reason "user proposes <name>"`, add
-it, check it in step 4, then come back.
+brings that is not on the list: `wf reopen <run> candidates --reason "user proposes <name>"` (this already starts step 3
+again: do not `begin` it), add it, `done`, then `begin` step 4, check it, and come back.
 
 ## 6. Record it
 Write down where the project keeps its decisions (its plans or ledger; otherwise tell the user what

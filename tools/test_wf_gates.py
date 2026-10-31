@@ -389,10 +389,10 @@ class RecordCli(unittest.TestCase):
         try:
             with contextlib.redirect_stdout(io.StringIO()):
                 namecheck.main(["alpha", "beta", "--field", "agent, workflow", "--since", SINCE,
-                                "--record", str(tmp / "1.record.json")])
+                                "--record", str(tmp / "checks" / "1.record.json")])
         finally:
             namecheck.check = orig
-        rec = json.loads((tmp / "1.record.json").read_text())
+        rec = json.loads((tmp / "checks" / "1.record.json").read_text())  # checks/ made by namecheck
         self.assertEqual(rec["names"], ["alpha", "beta"])
         self.assertEqual(rec["field"], ["agent", "workflow"])
         self.assertEqual(rec["since"], SINCE)
