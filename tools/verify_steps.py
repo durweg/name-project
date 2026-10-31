@@ -45,8 +45,17 @@ def white_space(run):
 def candidates(run):
     d = load(run, "steps/1-diamond.json")
     words = {low(w) for w in d.get("top", []) + d.get("bottom", [])}
-    errs = []
-    for c in load(run, "steps/3-candidates.json").get("candidates", []):
+    errs, seen = [], {}
+    cands = load(run, "steps/3-candidates.json").get("candidates", [])
+    for c in cands:
+        k = low(c.get("name", ""))
+        if k in seen:
+            errs.append(f"{c.get('name')!r}: the same name as {seen[k]!r} (names are compared without case "
+                        f"and extra spaces)")
+        seen.setdefault(k, c.get("name"))
+    if len(seen) < 10:
+        errs.append(f"{len(seen)} different names; step 3 needs 10 to 20")
+    for c in cands:
         pair = c.get("pair") or []
         if len(pair) != 2:
             errs.append(f"{c.get('name')}: pair must be two words")
@@ -59,8 +68,10 @@ def decision(run):
     proposed = {low(p.get("name", "")) for p in load(run, "steps/4-check.json").get("proposed", [])}
     dec = load(run, "steps/5-decision.json")
     short = [low(s.get("name", "")) for s in dec.get("shortlist", [])]
-    errs = [f"{s!r} is on the short list but not in the proposed set of step 4; "
-            f"reopen step 3 to add a new name" for s in short if s not in proposed]
+    dup = sorted({s for s in short if short.count(s) > 1})
+    errs_dup = [f"{d!r} is on the short list more than once" for d in dup]
+    errs = errs_dup + [f"{s!r} is on the short list but not in the proposed set of step 4; "
+                       f"reopen step 3 to add a new name" for s in short if s not in proposed]
     rec = low((dec.get("recommendation") or {}).get("name", ""))
     if rec not in short:
         errs.append(f"the recommendation {rec!r} is not on the short list")

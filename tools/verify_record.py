@@ -61,12 +61,17 @@ def main(argv):
     if not isinstance(left, list):
         errs.append("left_out must be a list")
         left = []
+    if not all(isinstance(x, dict) for x in left):
+        errs.append("left_out items must be objects with a name and a reason")
+        left = [x for x in left if isinstance(x, dict)]
     names = [key(x.get("name", "")) for x in left]
+    if len(set(names)) != len(names):
+        errs.append("left_out names a candidate more than once")
     if sorted(names) != sorted(cands - short):
         errs.append(f"left_out names {sorted(names)} should be exactly the candidates not on the short "
                     f"list {sorted(cands - short)}")
     for x in left:
-        if not str(x.get("reason", "")).strip():
+        if not isinstance(x.get("reason"), str) or not x["reason"].strip():
             errs.append(f"left_out {x.get('name')}: no reason")
     for e in errs:
         print(e)

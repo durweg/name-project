@@ -87,10 +87,11 @@ GitHub and is the MethodKit® trademark).
 candidates, and `--inspect` for every name that is not CLEAN), with the same `--field` and `--since`
 in all of them. Then `steps/4-check.json`:
 `{"field": [the field words], "since": "YYYY-MM-DD", "candidates": {"<name>": {"state": "checked"}
-or {"state": "unresolved", "reason": "error|incomplete|registry-unknown|inspect-failed|not-inspected"}},
+or {"state": "unresolved", "reason": "error|incomplete|registry-unknown|inspect-failed"}},
 "proposed": [{"name", "web_plain", "web_field", "trademark"}]}`, where each of the three searches is
-`{"query", "date", "sources": [...], "conclusion"}`. Write the state the records show (the gate
-recomputes it); only checked names can be proposed. The short list of step 5 comes from `proposed`.
+`{"query", "date": "YYYY-MM-DD", "sources": [links], "conclusion"}`. Write the state the records
+show (the gate recomputes it); only checked names can be proposed. A name that is not CLEAN needs
+its latest check to be an `--inspect` run; candidate names must all differ (case and spaces ignored). The short list of step 5 comes from `proposed`.
 
 ## 5. A short list, one decision
 1. Show the names that passed in one table: name | the pair it comes from and what it says (one line)

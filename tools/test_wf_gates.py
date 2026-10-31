@@ -80,7 +80,7 @@ class Fixture(unittest.TestCase):
         p.write_text(json.dumps(obj))
 
     def record(self, n, results, inspect=False, field=FIELD, since=SINCE, started="2026-10-31T10:30:00+01:00"):
-        self.put(f"checks/{n}.record.json", {"tool": "namecheck", "sha256": "x", "started_at": started,
+        self.put(f"checks/{n}.record.json", {"tool": "namecheck", "sha256": "0" * 64, "started_at": started,
                                              "names": [r["name"] for r in results], "field": field,
                                              "since": since, "inspect": inspect, "results": results})
 
@@ -166,7 +166,7 @@ class Check(Fixture):
 
     def test_not_clean_needs_inspect(self):
         self.flagged()
-        self.assertIn("not-inspected", self.gate(verify_check)[1])
+        self.assertIn("was not an --inspect run", self.gate(verify_check)[1])
 
     def test_inspect_read_false(self):
         self.flagged(read=False, error="no README")
@@ -198,7 +198,9 @@ class Check(Fixture):
     def test_search_record_incomplete(self):
         self.check_doc["proposed"][0]["trademark"] = {"query": "q", "date": "d"}
         self.put("steps/4-check.json", self.check_doc)
-        self.assertIn("trademark search lacks sources, conclusion", self.gate(verify_check)[1])
+        out = self.gate(verify_check)[1]
+        self.assertIn("trademark search lacks conclusion", out)
+        self.assertIn("date (YYYY-MM-DD)", out)
 
 
 class Record(Fixture):
@@ -234,6 +236,171 @@ class Record(Fixture):
                           for n in NAMES]
         self.put("steps/5-decision.json", d)
         self.assertEqual(self.edit(left_out=[])[0], 0)
+
+
+class Duplicates(Fixture):
+    """WP-P-001: names are compared without case and extra spaces, and counted once."""
+
+    def cands(self, names):
+        self.put("steps/3-candidates.json", {"candidates": [
+            {"name": n, "pair": ["flow", "craft"], "standout": "s", "confusion": "c"} for n in names]})
+        return self.gate(verify_steps, "candidates")
+
+    def test_ten_copies_of_one_name(self):
+        rc, out = self.cands(["name0"] * 10)
+        self.assertEqual(rc, 1)
+        self.assertIn("1 different names", out)
+
+    def test_case_and_space_variants(self):
+        rc, out = self.cands(NAMES[:9] + ["Name0 "])
+        self.assertEqual(rc, 1)
+        self.assertIn("the same name", out)
+
+    def test_ten_distinct(self):
+        self.assertEqual(self.cands(NAMES)[0], 0)
+
+    def test_proposed_twice(self):
+        self.check_doc["proposed"].append(dict(self.check_doc["proposed"][0], name="NAME0"))
+        self.put("steps/4-check.json", self.check_doc)
+        self.assertIn("proposed more than once", self.gate(verify_check)[1])
+
+    def test_shortlist_twice(self):
+        d = json.loads((self.run / "steps/5-decision.json").read_text())
+        d["shortlist"].append(dict(d["shortlist"][0], name="name0 "))
+        self.put("steps/5-decision.json", d)
+        self.assertIn("more than once", self.gate(verify_steps, "decision")[1])
+
+    def test_left_out_twice(self):
+        r = json.loads((self.run / "steps/6-record.json").read_text())
+        r["left_out"].append({"name": "name1", "reason": "again"})
+        self.put("steps/6-record.json", r)
+        self.assertIn("more than once", self.gate(verify_record)[1])
+
+
+class Types(Fixture):
+    """WP-P-002: required leaves have types and content, not only keys."""
+
+    def test_search_fields_wrong_types(self):
+        bad = {"query": 7, "date": True, "sources": [None], "conclusion": {"x": 1}}
+        self.check_doc["proposed"][0].update(web_plain=bad, web_field=bad, trademark=bad)
+        self.put("steps/4-check.json", self.check_doc)
+        out = self.gate(verify_check)[1]
+        for s in ("web_plain", "web_field", "trademark"):
+            self.assertIn(f"{s} search lacks query, conclusion, date", out)
+
+    def test_search_empty_sources(self):
+        self.check_doc["proposed"][0]["web_field"]["sources"] = []
+        self.put("steps/4-check.json", self.check_doc)
+        self.assertIn("sources", self.gate(verify_check)[1])
+
+    def test_record_structure(self):
+        rec = json.loads((self.run / "checks/1.record.json").read_text())
+        rec.update(sha256=None, started_at="later", inspect="no", names=NAMES[:9])
+        self.put("checks/1.record.json", rec)
+        out = self.gate(verify_check)[1]
+        for word in ("sha256", "started_at", "inspect must be", "results do not match"):
+            self.assertIn(word, out)
+
+    def test_declared_state_not_allowed(self):
+        self.check_doc["candidates"]["name2"] = {"state": "unresolved", "reason": "not-inspected"}
+        self.put("steps/4-check.json", self.check_doc)
+        self.assertIn("must say", self.gate(verify_check)[1])
+
+    def test_left_out_reason_not_text(self):
+        r = json.loads((self.run / "steps/6-record.json").read_text())
+        r["left_out"][0]["reason"] = 5
+        self.put("steps/6-record.json", r)
+        self.assertIn("no reason", self.gate(verify_record)[1])
+
+    def test_schema_types_in_workflow(self):
+        """The step schemas give every required leaf a type (checked by wf's json gate)."""
+        w = json.loads((REPO / "workflow.json").read_text())
+
+        def leaves(schema, path):
+            if schema.get("type") == "object":
+                props = schema.get("properties", {})
+                for k in schema.get("required", []):
+                    self.assertIn(k, props, f"{path}.{k} has no type")
+                    leaves(props[k], f"{path}.{k}")
+            elif schema.get("type") == "array" and "items" in schema:
+                leaves(schema["items"], path + "[]")
+            elif path.endswith(".candidates"):
+                return
+            else:
+                self.assertIn("type", schema, path)
+        for s in w["steps"]:
+            for g in s["gates"]:
+                if g["type"] == "json":
+                    leaves(g["schema"], s["id"])
+
+
+class Inspect(Fixture):
+    """WP-P-003: the latest record decides; a not-clean result needs that record to be an --inspect run."""
+
+    repo = {"fullName": "o/name3", "description": "an agent tool", "pushedAt": "2026-10-01", "stargazersCount": 0}
+
+    def test_old_inspect_does_not_cover_new_repo(self):
+        old = dict(self.repo, fullName="old/name3", read=True, commits="1", readme="x")
+        self.record("2", [result("name3", close=[old], clean=False)], inspect=True, started="2026-10-31T10:40:00+01:00")
+        self.record("3", [result("name3", close=[dict(self.repo, fullName="new/name3")], clean=False)],
+                    started="2026-10-31T10:50:00+01:00")
+        rc, out = self.gate(verify_check)
+        self.assertEqual(rc, 1)
+        self.assertIn("new/name3", out)
+
+    def test_never_inspected_cannot_be_declared_unresolved(self):
+        self.record("2", [result("name3", close=[self.repo], clean=False)], started="2026-10-31T10:40:00+01:00")
+        self.check_doc["candidates"]["name3"] = {"state": "unresolved", "reason": "inspect-failed"}
+        self.put("steps/4-check.json", self.check_doc)
+        rc, out = self.gate(verify_check)
+        self.assertEqual(rc, 1)
+        self.assertIn("was not an --inspect run", out)
+
+    def test_partly_read(self):
+        a = dict(self.repo, read=True, commits="1", readme="x")
+        b = dict(self.repo, fullName="o2/name3", read=False, error="no README")
+        self.record("2", [result("name3", close=[a, b], clean=False)], inspect=True, started="2026-10-31T10:40:00+01:00")
+        self.assertIn("unresolved/inspect-failed", self.gate(verify_check)[1])
+        self.check_doc["candidates"]["name3"] = {"state": "unresolved", "reason": "inspect-failed"}
+        self.put("steps/4-check.json", self.check_doc)
+        self.assertEqual(self.gate(verify_check)[0], 0)
+
+    def test_inspect_attempt_failed_stays_unclear(self):
+        u = dict(self.repo, description="", read=False, error="gh failed")
+        self.record("2", [result("name3", unclear=[u], clean=False)], inspect=True, started="2026-10-31T10:40:00+01:00")
+        self.check_doc["candidates"]["name3"] = {"state": "unresolved", "reason": "inspect-failed"}
+        self.put("steps/4-check.json", self.check_doc)
+        self.assertEqual(self.gate(verify_check)[0], 0)
+
+    def test_later_clean_check_counts(self):
+        self.record("2", [result("name3", close=[self.repo], clean=False)], started="2026-10-31T10:40:00+01:00")
+        self.record("3", [result("name3")], started="2026-10-31T10:50:00+01:00")
+        self.assertEqual(self.gate(verify_check)[0], 0)
+
+
+class RecordCli(unittest.TestCase):
+    """namecheck --record writes the record (network replaced by a stub)."""
+
+    def test_round_trip(self):
+        import namecheck
+        tmp = Path(tempfile.mkdtemp(prefix="nw-rec-"))
+        orig = namecheck.check
+        namecheck.check = lambda name, since, field, do_inspect: result(name)
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                namecheck.main(["alpha", "beta", "--field", "agent, workflow", "--since", SINCE,
+                                "--record", str(tmp / "1.record.json")])
+        finally:
+            namecheck.check = orig
+        rec = json.loads((tmp / "1.record.json").read_text())
+        self.assertEqual(rec["names"], ["alpha", "beta"])
+        self.assertEqual(rec["field"], ["agent", "workflow"])
+        self.assertEqual(rec["since"], SINCE)
+        self.assertFalse(rec["inspect"])
+        self.assertEqual(rec["sha256"], __import__("hashlib").sha256((TOOLS / "namecheck.py").read_bytes()).hexdigest())
+        rec["_file"] = "1.record.json"
+        self.assertEqual(verify_check.record_problems(rec), [])
+        shutil.rmtree(tmp)
 
 
 WF = Path(os.environ.get("WF_PLATFORM", REPO.parent / "workflow-platform")) / "bin" / "wf"
