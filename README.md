@@ -9,6 +9,8 @@ looks for the space no competitor's name occupies, joins unrelated words into ca
 one for collisions, and asks you to choose once from a short list. A name passes only when nobody
 **active in the same field** uses it; stars do not count. Durweg itself was named with it.
 
+A real example, step by step: **[naming stepaper](https://claude.ai/artifact/CKh1BGrRvUDbokrhLAi58t)** (English, with a switch to Chinese; a copy is in this repository: [case/stepaper-naming.html](case/stepaper-naming.html)).
+
 ## 🧭 Install
 
 You need Durweg first ([install Durweg](https://github.com/musetee/durweg/blob/main/README.md)). The
@@ -42,6 +44,7 @@ Start your agent in the folder of the project you want to name and tell it: "Run
 
 | I want to | How |
 | :--- | :--- |
+| See a whole run, from the diamond to the decision | [Case: naming stepaper](https://claude.ai/artifact/CKh1BGrRvUDbokrhLAi58t) |
 | Only check whether a name is free | See [Check a name on its own](#-check-a-name-on-its-own) below |
 | Make it my own | Make your own version with Durweg's write-your-method, or edit `workflow.json` and `skills/name-project/SKILL.md` following the [workflow format](https://github.com/musetee/durweg/blob/main/docs/workflow-format.md) |
 | Stop using it | `durweg library remove name-project`, then delete `~/Durweg/workflows/name-project/` |
