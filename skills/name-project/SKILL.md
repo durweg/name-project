@@ -9,10 +9,10 @@ The steps, in order. Each ends with something the user can see; ask the user onl
 one question at a time.
 
 
-**Run it with wf** (skill run-workflow): `wf start ~/.naming-workflow <slug> --runs <project>/runs`,
-then for each step `wf begin`, write the step's files (named at the end of each step below, paths
-relative to the run folder), and `wf done`. Where the user decides, `wf propose` before showing it
-and `wf confirm --quote "<their words>" --set chosen=<…>` after they answer. Without wf, follow the
+**Run it with durweg** (skill run-workflow): `durweg start ~/.naming-workflow <slug> --runs <project>/runs`,
+then for each step `durweg begin`, write the step's files (named at the end of each step below, paths
+relative to the run folder), and `durweg done`. Where the user decides, `durweg propose` before showing it
+and `durweg confirm --quote "<their words>" --set chosen=<…>` after they answer. Without durweg, follow the
 same steps and keep the same files.
 
 ## 1. The diamond
@@ -110,7 +110,7 @@ its latest check to be an `--inspect` run; candidate names must all differ (case
 **Files:** `steps/5-decision.json`: `{"shortlist": [{"name", "says", "standout_confusion",
 "first_letter", "check"}], "recommendation": {"name", "why", "weak_point"}}`; every name on the short
 list from `proposed` of step 4. Propose, ask, and confirm with `--set chosen=<name>`. A name the user
-brings that is not on the list: `wf reopen <run> candidates --reason "user proposes <name>"` (this already starts step 3
+brings that is not on the list: `durweg reopen <run> candidates --reason "user proposes <name>"` (this already starts step 3
 again: do not `begin` it), add it, `done`, then `begin` step 4, check it, and come back.
 
 ## 6. Record it

@@ -403,9 +403,9 @@ class RecordCli(unittest.TestCase):
         shutil.rmtree(tmp)
 
 
-WF = next((p / "bin" / "wf" for p in ([Path(os.environ["WF_PLATFORM"])] if os.environ.get("WF_PLATFORM") else [])
-           + [REPO.parent / "durweg", Path.home() / "durweg"] if (p / "bin" / "wf").is_file()),
-          REPO.parent / "durweg" / "bin" / "wf")   # the Durweg platform (wf)
+WF = next((p / "bin" / "durweg" for p in ([Path(os.environ["WF_PLATFORM"])] if os.environ.get("WF_PLATFORM") else [])
+           + [REPO.parent / "durweg", Path.home() / "durweg"] if (p / "bin" / "durweg").is_file()),
+          REPO.parent / "durweg" / "bin" / "durweg")   # the Durweg platform (command durweg, formerly wf)
 
 
 @unittest.skipUnless(WF.is_file(), "workflow platform not found next to this repository")

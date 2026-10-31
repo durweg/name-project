@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased: the command is `durweg`
+
+The workflow platform's command `wf` was renamed `durweg` with no alias, so the skill's
+`wf start/begin/done/propose/confirm/reopen` no longer ran. Skill, README and gate docstrings now say
+`durweg`; `tools/test_wf_gates.py` looks for `bin/durweg`: its whole-run test had been skipped
+since the rename ("workflow platform not found") and runs again. `{wf}` in `workflow.json` is
+Durweg's own placeholder for the snapshot and stays.
+
 ## Unreleased: runs with wf
 
 `workflow.json` describes the six steps for the workflow platform's `wf`: each step writes fixed

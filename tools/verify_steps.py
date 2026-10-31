@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""wf gate for steps 2, 3 and 5 of name-project: the links between steps that a JSON schema cannot
-express. Run by wf from the run's snapshot:
+"""Durweg gate for steps 2, 3 and 5 of name-project: the links between steps that a JSON schema cannot
+express. Run by durweg from the run's snapshot:
 
   verify_steps.py white-space RUN   the user's chosen direction is one of the directions (or their own)
   verify_steps.py candidates RUN    each candidate's pair starts with a word of the diamond's top or bottom
   verify_steps.py decision RUN      short list within the proposed set, recommendation and choice in it
 
-Exit 1 with one line per problem. Standard library only, no other local files (wf snapshot rule).
+Exit 1 with one line per problem. Standard library only, no other local files (Durweg snapshot rule).
 """
 import json
 import sys

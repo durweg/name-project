@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""wf gate for step 4 of name-project (design WP-R-004/005/012): every candidate was really checked.
+"""Durweg gate for step 4 of name-project (design WP-R-004/005/012): every candidate was really checked.
 
   verify_check.py RUN
 
@@ -19,7 +19,7 @@ checked names, each with three searches recorded (web_plain, web_field, trademar
 must use the --field and --since given in 4-check.json and the namecheck of this run's snapshot.
 namecheck's exit code is not used: it exits 0 even when a name could not be checked.
 
-Exit 1 with one line per problem. Standard library only (wf snapshot rule).
+Exit 1 with one line per problem. Standard library only (Durweg snapshot rule).
 """
 import datetime
 import hashlib

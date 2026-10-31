@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""wf gate for step 6 of name-project (design WP-R-014): the record agrees with the earlier steps.
+"""Durweg gate for step 6 of name-project (design WP-R-014): the record agrees with the earlier steps.
 
   verify_record.py RUN
 
@@ -8,7 +8,7 @@ of step 5's confirm event; check_date = the latest start date of the namecheck r
 run's --trial flag; left_out = exactly the candidates not on the short list, each with a reason
 (an empty list when there are none). Reads the run's event log through $WF_STATE.
 
-Exit 1 with one line per problem. Standard library only (wf snapshot rule).
+Exit 1 with one line per problem. Standard library only (Durweg snapshot rule).
 """
 import json
 import os
