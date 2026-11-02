@@ -2,7 +2,7 @@ English · [中文](README_cn.md)
 
 # name-project
 
-**A [Durweg](https://github.com/musetee/durweg) workflow that has AI agents (Claude Code, Codex, Antigravity) find a name for your project in 6 fixed steps, so that the name says what is special about it and nobody active in the same field already uses it.**
+**A [Durweg](https://github.com/durweg/durweg) workflow that has AI agents (Claude Code, Codex, Antigravity) find a name for your project in 6 fixed steps, so that the name says what is special about it and nobody active in the same field already uses it.**
 
 The agent fills a diamond with you (your core value, two kinds of competitors, what only you have),
 looks for the space no competitor's name occupies, joins unrelated words into candidates, checks every
@@ -13,7 +13,7 @@ A real example, step by step: **[naming stepaper](https://claude.ai/artifact/CKh
 
 ## 🧭 Install
 
-You need Durweg first ([install Durweg](https://github.com/musetee/durweg/blob/main/README.md)). The
+You need Durweg first ([install Durweg](https://github.com/durweg/durweg/blob/main/README.md)). The
 collision check searches GitHub, so you also need a GitHub account and the GitHub command line `gh`,
 logged in once with `gh auth login`.
 
@@ -46,7 +46,7 @@ Start your agent in the folder of the project you want to name and tell it: "Run
 | :--- | :--- |
 | See a whole run, from the diamond to the decision | [Case: naming stepaper](https://claude.ai/artifact/CKh1BGrRvUDbokrhLAi58t) |
 | Only check whether a name is free | See [Check a name on its own](#-check-a-name-on-its-own) below |
-| Make it my own | Make your own version with Durweg's write-your-method, or edit `workflow.json` and `skills/name-project/SKILL.md` following the [workflow format](https://github.com/musetee/durweg/blob/main/docs/workflow-format.md) |
+| Make it my own | Make your own version with Durweg's write-your-method, or edit `workflow.json` and `skills/name-project/SKILL.md` following the [workflow format](https://github.com/durweg/durweg/blob/main/docs/workflow-format.md) |
 | Stop using it | `durweg library remove name-project`, then delete `~/Durweg/workflows/name-project/` |
 
 ## 🔍 Check a name on its own

@@ -2,7 +2,7 @@
 
 # name-project
 
-**一个 [Durweg](https://github.com/musetee/durweg) 工作流：让 AI agent（Claude Code、Codex、Antigravity）按固定的 6 步给你的项目起名字，让名字说出项目的特别之处，并且同一领域里没有活跃项目在用。**
+**一个 [Durweg](https://github.com/durweg/durweg) 工作流：让 AI agent（Claude Code、Codex、Antigravity）按固定的 6 步给你的项目起名字，让名字说出项目的特别之处，并且同一领域里没有活跃项目在用。**
 
 agent 先和你一起填一个钻石（核心价值、两类竞争对手、只有你有的东西），找出竞争对手的名字都没占的方向，把看似无关的词拼成候选名字，逐个查重，最后给你一张短名单，请你只选一次。只有**同一领域里没有活跃项目在用**的名字才算通过；星数不算数。Durweg 这个名字就是用它起的。
 
@@ -10,7 +10,7 @@ agent 先和你一起填一个钻石（核心价值、两类竞争对手、只�
 
 ## 🧭 安装
 
-先要装好 Durweg（[安装 Durweg](https://github.com/musetee/durweg/blob/main/README_cn.md)）。查重要搜索 GitHub，所以还需要一个 GitHub 账号和 GitHub 命令行工具 `gh`，并用 `gh auth login` 登录一次。
+先要装好 Durweg（[安装 Durweg](https://github.com/durweg/durweg/blob/main/README_cn.md)）。查重要搜索 GitHub，所以还需要一个 GitHub 账号和 GitHub 命令行工具 `gh`，并用 `gh auth login` 登录一次。
 
 1. **打开终端**（同 Durweg “每天怎么用”第 1 步）。
 2. **加进方法库：** `durweg library add https://github.com/musetee/name-project.git --name name-project`。
@@ -39,7 +39,7 @@ agent 先和你一起填一个钻石（核心价值、两类竞争对手、只�
 | :--- | :--- |
 | 看一次完整的运行，从钻石到最后的决定 | [案例：给 stepaper 起名](https://claude.ai/artifact/CKh1BGrRvUDbokrhLAi58t#zh) |
 | 只查一个名字有没有人用 | 见下面的[单独查重](#-单独查重) |
-| 改成我自己的做法 | 用 Durweg 的 write-your-method 做一个自己的版本，或者按[工作流格式](https://github.com/musetee/durweg/blob/main/docs/workflow-format_cn.md)改 `workflow.json` 和 `skills/name-project/SKILL.md` |
+| 改成我自己的做法 | 用 Durweg 的 write-your-method 做一个自己的版本，或者按[工作流格式](https://github.com/durweg/durweg/blob/main/docs/workflow-format_cn.md)改 `workflow.json` 和 `skills/name-project/SKILL.md` |
 | 不再用它 | `durweg library remove name-project`，再删掉 `~/Durweg/workflows/name-project/` |
 
 ## 🔍 单独查重
